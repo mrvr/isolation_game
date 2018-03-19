@@ -6,15 +6,17 @@ class GameState:
         self.row_lim = 3
         self.col_lim = 2
         self.blocker = 1
-        self.player1 = 2
-        self.player2 = 3
+        #self.player1 = 2
+        #self.player2 = 3
+        ######@index 0 gives first player location, Index 1 gives second player location
+        self.player_loc=[None,None]
         self.lastpos1 = (0,0)
         self.lastpos2 = (0,0)
         # TODO: Copy your implementation from the previous quiz
         #coordinates = namedtuple("coordinates",['x','y'])
         #location = namedtuple("location",['first','second'])
         #self.board = [[0]* self.col_lim for _ in range(self.row_lim)]
-        self.board = [(0,0) for _ in range(self.row_lim)]
+        self.board = [[0]*self.col_lim for _ in range(self.row_lim)]
         self.board[-1][-1] = self.blocker #block the last move
         self.initiator = 0 
         #location(first=coordinates(0,0),second=coordinates(0,0))
@@ -45,7 +47,7 @@ class GameState:
         """
         # TODO: implement this function!
         from copy import deepcopy
-        if self.isEmpty():
+        if not self.isEmpty():
             board = deepcopy(self.board)
             board[-1][-1]=1
             return board
@@ -150,13 +152,14 @@ class GameState:
         #create a new board
         nboard = deepcopy(self)
         #block the last box
-        nboard.board[self.row_lim-1][self.col_lim-1] = 1
-        
-        if self.initiator == 0:
-            self.board[move[0]][move[1]] = 2
-            self.initiator = 1
-        else:
-            self.board[move[0]][move[1]] = 3
-            self.initiator = 0
+        nboard.board[move[0]][move[1]] = 1
+        self.initiator ^= 1
+        self.player_loc[self.initiator]=move
+#        if self.initiator == 0:
+#            #self.board[move[0]][move[1]] = 2
+#            self.initiator = 1
+#        else:
+#            #self.board[move[0]][move[1]] = 3
+#            self.initiator = 0
         
         return nboard
