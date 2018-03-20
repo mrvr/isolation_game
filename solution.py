@@ -24,10 +24,10 @@ class GameState:
         
         # find if the board is empty
     def isEmpty(self):        
-        #row_lim = self.row_lim
-        #col_lim = self.col_lim
-        for i in range (self.row_lim):
-            for j in range (self.col_lim):
+        row_lim = self.row_lim
+        col_lim = self.col_lim
+        for i in range (row_lim):
+            for j in range (col_lim):
                 if (i,j)!=(2,1):
                     if self.board[i][j]!=0:
                         return False
@@ -47,17 +47,26 @@ class GameState:
         """
         # TODO: implement this function!
         from copy import deepcopy
-        if not self.isEmpty():
-            board = deepcopy(self.board)
-            board[-1][-1]=1
-            return board
-        
+        #check whether board initialized
+        print("self.board = ",self.board)
         moves = []
-        loc = (0,0)
-        if self.initiator==0:
-            loc = self.lastpos1
-        else:
-            loc = self.lastpos2
+        row_lim = self.row_lim
+        col_lim = self.col_lim
+        print("self.initiator ",self.initiator)
+        loc = self.player_loc[self.initiator]
+        print("Current ocation ",loc)
+        
+        if not loc:
+            #board = deepcopy(self.board)
+            #board[-1][-1]=1
+            for col in range(0,col_lim):            
+                for row in range(0,row_lim):
+                    if self.board[row][col]!=1:
+                        moves.append((col,row))
+            return moves
+        
+        
+        
             
 #        if (loc[0] < 0 and loc[1] < 0) and (loc[0] >= self.row_lim and loc[1] >= self.col_lim):
 #            return moves
@@ -69,68 +78,90 @@ class GameState:
         # add empty locations to moves
         #from current location move backword till you encounter a black
         # add all empty positions to the moves
-        #@@@ backward moves
-        for i in range (loc[0],0,-1):
-            ''' backward moves'''
-            for j in range(loc[1]-1,0,-1):
-                if ((j < 0) and (self.board[i][j]!=0) ):
-                    break
-                else:
-                    if [i,j] not in moves:
-                        moves.append((i,j))
-             
-        for i in range (loc[0],self.row_lim):
+        #@@@ backward moves    
+        
+        row = loc[0] #move a step back by row wise
+        col = loc[1]
+        while col >= 0:            
+            while (row >= 0):
+                if (self.board[row][col]!=0):                    
+                    break;
+                #if (row,col) not in moves:
+                if (col,row) not in moves:
+                    moves.append((col,row))
+                row-=1                
+            col-=1
+        
+#        for i in range (loc[0],0,-1):
+#            ''' backward moves'''
+#            for j in range(loc[1]-1,0,-1):
+#                if ((j < 0) and (self.board[i][j]!=0) ):
+#                    break                
+#                #if [i,j] not in moves:
+#                if [j,i] not in moves:
+#                        #moves.append((i,j))
+#                        moves.append((j,i))
+        for j in range(loc[1],self.col_lim):    
             "forward moves"
-            for j in range(loc[1]+1,self.col_lim):
+            for i in range (loc[0],self.row_lim):
                 if ((j>=self.col_lim) and (self.board[i][j]!=0)) :
                     break
                 else:
-                    if [i,j] not in moves:
-                        moves.append((i,j))
+                    #if [i,j] not in moves:
+                    if (j,i) not in moves:
+                        #moves.append((i,j))
+                        moves.append((j,i))
                                     
         #column wise forward moves
-        for i in range (loc[0],self.row_lim):
+        for j in range(loc[1],self.col_lim):        
             "column wise forward moves"
-            for j in range(loc[1]+1,self.col_lim):
+            for i in range (loc[0],self.row_lim):
                 if ((j>=self.col_lim) and (self.board[j][i]!=0)):
                     break
                 else:
-                    if [i,j] not in moves:
-                        moves.append((i,j))           
+                    #if [i,j] not in moves:
+                    if (j,i) not in moves:
+                        #moves.append((i,j))           
+                        moves.append((j,i))
         
         #Column wise backward moves
-        for i in range (loc[0],0,-1):
+        for j in range(loc[1],0,-1):        
             ''' column wise backward moves'''
-            for j in range(loc[1]-1,0,-1):
+            for i in range (loc[0],0,-1):
                 if ( (j < 0) and (self.board[j][i]!=0)):
                     break
                 else:
-                    if [i,j] not in moves:
-                        moves.append((i,j))
+                    #if [i,j] not in moves:
+                    if (j,i) not in moves:
+                        #moves.append((i,j))
+                        moves.append((j,i))
                 
         #diagonal forward moves
-        i,j = loc[0]+1,loc[1]+1
+        i,j = loc[0],loc[1]
         while((j < self.col_lim) and (i < self.row_lim) ):
            "column wise forward moves"            
            if self.board[i][j]!=0:
                break
-           if [i,j] not in moves:
-                moves.append((i,j))
+           #if [i,j] not in moves:
+           if (j,i) not in moves:
+                moves.append((j,i))
            i+=1
            j+=1
         
         #diagonal forward moves
-        i,j = loc[0]-1,loc[1]-1
+        i,j = loc[0],loc[1]
         while((i >= 0) and (j >= 0)):
             "column wise forward moves"            
             if self.board[i][j]!=0:
                 break
-            if [i,j] not in moves:
-                moves.append((i,j))
+            #if [i,j] not in moves:
+            if [j,i] not in moves:
+                moves.append((j,i))
             i-=1
             j-=1
             
-
+        return moves
+    
     def forecast_move(self, move):
         """ Return a new board object with the specified move
         applied to the current game state.
@@ -145,16 +176,24 @@ class GameState:
         # TODO: implement this function!
         from copy import deepcopy
         #check if the move is legal
-        
-        #print("self.get_legal_moves() ",self.get_legal_moves())
-        if [move[0],move[1]] not in self.get_legal_moves():
+        print("move",move)
+        legal_moves = self.get_legal_moves()
+        print("legal_moves =",legal_moves)
+        if move not in legal_moves:
+        #if (([move[0],move[1]] not in legal_moves) or (move not in legal_moves)):
+        #if move not in self.get_legal_moves():
             raise RuntimeError("Illegal move")
+        
+        #self.initiator ^= 1
+        #self.player_loc[self.initiator]=move
         #create a new board
         nboard = deepcopy(self)
         #block the last box
         nboard.board[move[0]][move[1]] = 1
-        self.initiator ^= 1
-        self.player_loc[self.initiator]=move
+        nboard.player_loc[nboard.initiator]=move
+        nboard.initiator ^=1
+        
+        
 #        if self.initiator == 0:
 #            #self.board[move[0]][move[1]] = 2
 #            self.initiator = 1
